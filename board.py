@@ -86,6 +86,7 @@ class Board(object):
         (last_row, last_col) = last_position
         (next_row, next_col) = next_position
 
+        self.special_moves_cases(last_position, next_position)
         self.board_inst[next_row, next_col] = self.board_inst[last_row, last_col]
         self.board_inst[last_row, last_col] = Empty(last_row, last_col, None)
 
@@ -130,3 +131,67 @@ class Board(object):
         else:
             common.debug("Unrecognized color: %s. Exit game." % str(self.current_color))
             sys.exit()
+
+    def special_moves_cases(self, last_position, next_position):
+        """
+        This method tackles special moves such as "castling" or "en passant"
+
+        :param last_position: (Integer, Integer) The last position of the selected chess piece
+        :param next_position: (Integer, Integer) The next position of the selected chess piece
+        :return: None
+        """
+        (last_row, last_col) = last_position
+        (next_row, next_col) = next_position
+
+        # check for king's side castling
+        if isinstance(self.board_inst[last_row, last_col], King) and \
+                isinstance(self.board_inst[last_row, 7], Rook) and \
+                self.board_inst[last_row, last_col].has_been_moved is False and \
+                self.board_inst[last_row, 7].has_been_moved is False and \
+                next_row == last_row and next_col == 6:
+            # king_side_castling = True
+            self.board_inst[last_row, 7].move(last_row, 5)
+            self.board_inst[last_row, 5] = self.board_inst[last_row, 7]
+            self.board_inst[last_row, 7] = Empty(last_row, 7, None)
+
+        # check for queen's side castling
+        if isinstance(self.board_inst[last_row, last_col], King) and \
+                isinstance(self.board_inst[last_row, 0], Rook) and \
+                self.board_inst[last_row, last_col].has_been_moved is False and \
+                self.board_inst[last_row, 0].has_been_moved is False and \
+                next_row == last_row and next_col == 2:
+            # queen_side_castling = True
+            self.board_inst[last_row, 0].move(last_row, 3)
+            self.board_inst[last_row, 3] = self.board_inst[last_row, 0]
+            self.board_inst[last_row, 0] = Empty(last_row, 7, None)
+
+        # reset special pawn case: en passant
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if isinstance(self.board_inst[i, j], Pawn) and \
+                        self.board_inst[i, j].color == self.current_color:
+                    self.board_inst[i, j].initial_move = False
+
+        # special pawn case (first move)
+        if isinstance(self.board_inst[last_row, last_col], Pawn) and \
+                self.board_inst[last_row, last_col].initial_position is True and \
+                abs(next_row - last_row) == 2:
+            self.board_inst[last_row, last_col].initial_move = True
+
+        # special case: en passant
+        if isinstance(self.board_inst[last_row, last_col], Pawn) and \
+                isinstance(self.board_inst[next_row, next_col], Empty) and \
+                isinstance(self.board_inst[last_row, next_col], Pawn) and \
+                self.board_inst[last_row, next_col].color != self.board_inst[last_row, last_col].color and \
+                abs(next_col - last_col) == 1:
+            # self.score[self.board_inst[last_row, last_col].color] += self.board_inst[last_row, next_col].strength
+            self.board_inst[last_row, next_col] = Empty(last_row, next_col, None)
+
+        # replace Pawn with Queen
+        if next_row == 0 and isinstance(self.board_inst[next_row, next_col], Pawn) and \
+                self.board_inst[next_row, next_col].color == 'white':
+            self.board_inst[next_row, next_col] = Queen(next_row, next_col, 'white')
+
+        if next_row == 7 and isinstance(self.board_inst[next_row, next_col], Pawn) and \
+                self.board_inst[next_row, next_col].color == 'black':
+            self.board_inst[next_row, next_col] = Queen(next_row, next_col, 'black')

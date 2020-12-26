@@ -1,6 +1,9 @@
 """
 The part of the project that deals with the logic of individual chess pieces
 """
+# region imports
+import copy
+# endregion imports
 
 
 # region Piece
@@ -79,6 +82,7 @@ class Rook(Piece):
     name = "Rook"
     short_name = "R"
     strength = 5
+    has_been_moved = False
 
     def update_valid_moves(self, board_inst):
         """
@@ -268,7 +272,96 @@ class King(Piece):
         :param board_inst: (Dict{8, 8}) The current state of the chess pieces on the board
         :return: None
         """
-        pass
+        self.clear_valid_moves()
+
+        i = self.row
+        j = self.col
+
+        list_directions = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]]
+
+        for direction in list_directions:
+            [x, y] = [i + direction[0], j + direction[1]]
+            if (x < 0 or x > 7) or \
+                    (y < 0 or y > 7):
+                continue
+
+            possible_next_move = board_inst[x, y]
+            if isinstance(possible_next_move, Empty) or \
+                    self.color != possible_next_move.color:
+
+                if self.validate_next_position(board_inst, x, y) is True:
+                    self.valid_moves.append((x, y))
+
+        # small castling
+        if self.has_been_moved is False and \
+                self.col == 4 and \
+                isinstance(board_inst[self.row, 7], Rook) and \
+                board_inst[self.row, 7].has_been_moved is False and \
+                isinstance(board_inst[self.row, 5], Empty) and \
+                isinstance(board_inst[self.row, 6], Empty) and \
+                self.validate_next_position(board_inst, self.row, 6) is True:
+            self.valid_moves.append((self.row, 6))
+
+        # long castling
+        if self.has_been_moved is False and \
+                self.col == 4 and \
+                isinstance(board_inst[self.row, 0], Rook) and \
+                board_inst[self.row, 0].has_been_moved is False and \
+                isinstance(board_inst[self.row, 3], Empty) and \
+                isinstance(board_inst[self.row, 2], Empty) and \
+                isinstance(board_inst[self.row, 1], Empty) and \
+                self.validate_next_position(board_inst, self.row, 2) is True:
+            self.valid_moves.append((self.row, 2))
+
+    def validate_next_position(self, board_inst, next_row, next_col):
+        """
+        This function checks if the next possible position of the \"King\" chess piece would be in
+                     check if the \"King\" would be moves there.
+
+        :param board_inst: The board instance on which the chess piece will be drawn
+        :param next_row: The row position of the next move
+        :param next_col: The column position of the next move
+        :return: Boolean (True of False)
+        """
+        rows = 8
+        cols = 8
+
+        from board import Board
+        board_handler = Board()
+        board_handler.board_inst = copy.deepcopy(board_inst)
+
+        board_handler.board_inst[self.row, self.col] = Empty(self.row, self.col, None)
+        board_handler.board_inst[next_row, next_col] = Pawn(next_row, next_col, self.color)
+        board_handler.update_valid_moves()
+
+        for i in range(rows):
+            for j in range(cols):
+                if isinstance(board_handler.board_inst[i, j], Empty) or \
+                        board_handler.board_inst[i, j].color == self.color or \
+                        len(board_handler.board_inst[i, j].valid_moves) == 0:
+                    continue
+
+                for move in board_handler.board_inst[i, j].valid_moves:
+                    if move[0] == next_row and move[1] == next_col:
+
+                        # special case for the Pawns
+                        if isinstance(board_handler.board_inst[i, j], Pawn) and \
+                                next_col == j:
+                            continue
+
+                        return False
+        return True
+
+    def move(self, row, col):
+        """
+        This method updates the position of the current chess piece
+
+        :param row: (Integer) The updated row value
+        :param col: (Integer) The updated column value
+        :return: None
+        """
+        super().move(row, col)
+        self.has_been_moved = True
 
 # endregion King
 

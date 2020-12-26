@@ -14,6 +14,8 @@ MAX_FPS = 15
 TITLE = "Python Chess Game v0.1"
 ICON = "Knight"
 
+FLAG_DEBUG = True
+
 
 # region GameMode
 class GameMode(Enum):
@@ -26,4 +28,14 @@ GAME_MODE = GameMode.MULTI_PLAYER
 # endregion constants
 
 
+# region debug
+def debug(message):
+    """
+    This method prints a message only if the FLAG_DEBUG flag is set to true
+    :param message: (String) The message that we want to display
+    :return: None
+    """
+    if FLAG_DEBUG:
+        print(message)
 
+# endregion debug

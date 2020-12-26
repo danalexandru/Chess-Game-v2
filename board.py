@@ -38,3 +38,29 @@ class Board(object):
         for i in range(common.DIMENSION):
             self.board_inst[1, i] = Pawn(1, i, 'black')
             self.board_inst[6, i] = Pawn(6, i, 'white')
+
+    def select_chess_piece(self, position):
+        """
+        This function selects the current chess piece that was clicked on
+
+        :param position: The position of the chess piece on the board
+        :return: Boolean (True or False
+        """
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.board_inst[row, col].cancel()
+
+        (row, col) = position
+        if not isinstance(self.board_inst[row, col], Empty) and \
+                self.board_inst[row, col].color == self.current_color:
+            self.board_inst[row, col].select()
+
+    def get_piece(self, position):
+        """
+        This method returns the chess piece at the requested position
+
+        :param position: The position of the chess piece on the board
+        :return: (Piece) The chess piece
+        """
+        (row, col) = position
+        return self.board_inst[row, col]

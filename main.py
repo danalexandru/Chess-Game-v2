@@ -6,6 +6,7 @@ import pygame
 import os
 
 import common
+from board import Board
 
 
 # endregion imports
@@ -17,24 +18,24 @@ def load_images():
     This function loads the images of all the chess pieces and returns them in dictionary form
     :return: Dictionary containing all the images transformed to fit the chessboard squares
     {
-        "black": [<pygame.image>, ...],
-        "white": [<pygame.image>, ...]
+        "black": {<pygame.image>, ...},
+        "white": {<pygame.image>, ...}
     }
     """
     pieces = ["Rook", "Knight", "Bishop", "Queen", "King", "Pawn"]
     dict_images = {
-        "black": [],
-        "white": []
+        "black": {},
+        "white": {}
     }
     for piece in pieces:
-        dict_images["black"].append(pygame.transform.scale(pygame.image.load(os.path.join("pics",
-                                                                                          "black",
-                                                                                          piece + ".png")),
-                                                           (common.SQUARE_SIZE, common.SQUARE_SIZE)))
-        dict_images["black"].append(pygame.transform.scale(pygame.image.load(os.path.join("pics",
-                                                                                          "white",
-                                                                                          piece + ".png")),
-                                                           (common.SQUARE_SIZE, common.SQUARE_SIZE)))
+        dict_images["black"][piece] = pygame.transform.scale(pygame.image.load(os.path.join("pics",
+                                                                                            "black",
+                                                                                            piece + ".png")),
+                                                             (common.SQUARE_SIZE, common.SQUARE_SIZE))
+        dict_images["white"][piece] = pygame.transform.scale(pygame.image.load(os.path.join("pics",
+                                                                                            "white",
+                                                                                            piece + ".png")),
+                                                             (common.SQUARE_SIZE, common.SQUARE_SIZE))
 
     return dict_images
 
@@ -43,23 +44,61 @@ def load_images():
 
 
 # region redraw_game_state
-def redraw_game_state(screen):
+def redraw_game_state(screen, board, dict_images):
     """
     This method draws the current state of the chessboard
 
     :param screen: (pygame.display) Pygame module to control the display window and screen
+    :param board: (Dict{8, 8}) The current state of the chess pieces on the board
+    :param dict_images: (Dict{"black": {}, "white": {}}) Dictionary containing the images of the chess pieces
     :return: Boolean (True or False)
     """
-    # Draw the empty board
-    # colors = [pygame.Color("white"), pygame.Color("gray")]
+    if not redraw_empty_board(screen, board):
+        return False
+
+    if not redraw_board_instance(screen, board, dict_images):
+        return False
+
+    pygame.display.update()
+    return True
+
+
+def redraw_empty_board(screen, board):
+    """
+    This method draws an empty chessboard
+
+    :param screen: (pygame.display) Pygame module to control the display window and screen
+    :param board: (Dict{8, 8}) The current state of the chess pieces on the board
+    :return: Boolean (True or False)
+    """
     colors = [pygame.Color(235, 235, 208), pygame.Color(119, 148, 85)]
-    for row in range(common.DIMENSION):
-        for col in range(common.DIMENSION):
+    for row in range(board.rows):
+        for col in range(board.cols):
             color = colors[(row + col) % 2]
             pygame.draw.rect(screen, color, pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
                                                         common.SQUARE_SIZE, common.SQUARE_SIZE))
 
-    pygame.display.update()
+    return True
+
+
+def redraw_board_instance(screen, board, dict_images):
+    """
+    This method draws the remaining chess pieces on the empty board
+
+    :param screen: (pygame.display) Pygame module to control the display window and screen
+    :param board: (Dict{8, 8}) The current state of the chess pieces on the board
+    :param dict_images: (Dict{"black": [], "white": []}) Dictionary containing the images of the chess pieces
+    :return: Boolean (True or False)
+    """
+    from piece import Empty
+    for row in range(board.rows):
+        for col in range(board.cols):
+            piece = board.board_inst[row, col]
+
+            if not isinstance(piece, Empty):
+                screen.blit(dict_images[piece.color][piece.name],
+                            pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
+                                        common.SQUARE_SIZE, common.SQUARE_SIZE))
     return True
 
 
@@ -86,10 +125,12 @@ def main():
 
     screen.fill(pygame.Color("white"))
 
+    board = Board()
+    dict_images = load_images()
     run = True
     while run:
         clock.tick(common.MAX_FPS)
-        if not redraw_game_state(screen):
+        if not redraw_game_state(screen, board, dict_images):
             run = False
             pygame.quit()
 

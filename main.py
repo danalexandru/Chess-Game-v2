@@ -92,13 +92,21 @@ def redraw_highlighted_board_instances(screen, board):
     :param board: (Dict{8, 8}) The current state of the chess pieces on the board
     :return: Boolean (True or False)
     """
-    highlighted_color = pygame.Color(246, 246, 130)
+    highlighted_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
+    highlighted_square.fill((246, 246, 130, 150))  # yellow
+
     for row in range(board.rows):
         for col in range(board.cols):
             if board.get_piece((row, col)).is_selected:
-                pygame.draw.rect(screen, highlighted_color,
-                                 pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
-                                             common.SQUARE_SIZE, common.SQUARE_SIZE))
+                screen.blit(highlighted_square,
+                            pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
+                                        common.SQUARE_SIZE, common.SQUARE_SIZE))
+
+                board.update_valid_moves()
+                for move in board.get_piece((row, col)).valid_moves:
+                    screen.blit(highlighted_square,
+                                pygame.Rect(move[1] * common.SQUARE_SIZE, move[0] * common.SQUARE_SIZE,
+                                            common.SQUARE_SIZE, common.SQUARE_SIZE))
 
     return True
 
@@ -198,8 +206,10 @@ def main():
                 if position is not False and last_position is not False:
                     if board.is_move_valid(last_position, position):
                         board.move(last_position, position)
-                        position = False
-                        board.cancel()
+                        board.update_current_color()
+
+                    board.cancel()
+                    position = False
 
 
 if __name__ == "__main__":

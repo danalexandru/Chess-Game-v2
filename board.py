@@ -1,6 +1,8 @@
 """
 The part of the project that deals with the login between chess pieces
 """
+import sys
+
 import common
 from piece import Rook, Knight, Bishop, Queen, King, Pawn, Empty
 
@@ -89,6 +91,16 @@ class Board(object):
 
         self.board_inst[next_row, next_col].move(next_row, next_col)
 
+    def update_valid_moves(self):
+        """
+        This method updated the valid moves list of all chess pieces across the board
+
+        :return: None
+        """
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.board_inst[row, col].update_valid_moves(self.board_inst)
+
     def is_move_valid(self, last_position, next_position):
         """
         This method validated the current move that is being made
@@ -96,9 +108,25 @@ class Board(object):
         :param next_position: (Integer, Integer) The next position of the selected chess piece
         :return: Boolean (True or False)
         """
-        # TODO add logic for last_position and next_position
         (last_row, last_col) = last_position
-        if self.board_inst[last_row, last_col].is_selected:
+        (next_row, next_col) = next_position
+
+        self.board_inst[last_row, last_col].update_valid_moves(self.board_inst)
+        if self.board_inst[last_row, last_col].is_selected and \
+                self.board_inst[last_row, last_col].validate_move(next_row, next_col):
             return True
 
         return False
+
+    def update_current_color(self):
+        """
+        This method update the color of the current player
+        :return: None
+        """
+        if self.current_color == "black":
+            self.current_color = "white"
+        elif self.current_color == "white":
+            self.current_color = "black"
+        else:
+            common.debug("Unrecognized color: %s. Exit game." % str(self.current_color))
+            sys.exit()

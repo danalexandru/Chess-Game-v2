@@ -167,18 +167,17 @@ def main():
     """
     print("... Starting chess game v0.1")
     pygame.init()
+    board = Board()
     screen = pygame.display.set_mode((common.GAME_WIDTH, common.GAME_HEIGHT))
 
-    pygame.display.set_caption(common.TITLE)
+    pygame.display.set_caption(common.TITLE + " (\"" + board.current_color.capitalize() + "\" to move)")
     pygame.display.set_icon(pygame.image.load(os.path.join("pics",
-                                                           "white",
-                                                           "Knight.png")))
+                                                           "Icon.png")))
     clock = pygame.time.Clock()
     pygame.font.init()
 
     screen.fill(pygame.Color("white"))
 
-    board = Board()
     dict_images = load_images()
     position = False
 
@@ -189,6 +188,7 @@ def main():
             run = False
             pygame.quit()
 
+        pygame.display.set_caption(common.TITLE + " (\"" + board.current_color.capitalize() + "\" to move)")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

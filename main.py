@@ -192,12 +192,14 @@ def main():
                 position = click_on_chessboard(mouse_current_position)
 
                 if position is not False:
-                    board.select_chess_piece(position)
+                    board.select(position)
                     common.debug("Position: (%d, %d)" % (position[0], position[1]))
-                    
-                # if position is not False and last_position is not False:
-                #     if board.move_chess_piece(last_position, position) is True:
-                #         position = False
+
+                if position is not False and last_position is not False:
+                    if board.is_move_valid(last_position, position):
+                        board.move(last_position, position)
+                        position = False
+                        board.cancel()
 
 
 if __name__ == "__main__":

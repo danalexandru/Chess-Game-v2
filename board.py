@@ -39,21 +39,27 @@ class Board(object):
             self.board_inst[1, i] = Pawn(1, i, 'black')
             self.board_inst[6, i] = Pawn(6, i, 'white')
 
-    def select_chess_piece(self, position):
+    def select(self, position):
         """
         This function selects the current chess piece that was clicked on
 
         :param position: The position of the chess piece on the board
         :return: Boolean (True or False
         """
-        for row in range(self.rows):
-            for col in range(self.cols):
-                self.board_inst[row, col].cancel()
-
         (row, col) = position
         if not isinstance(self.board_inst[row, col], Empty) and \
                 self.board_inst[row, col].color == self.current_color:
             self.board_inst[row, col].select()
+
+    def cancel(self):
+        """
+        This method cancels the previous selection
+
+        :return: None
+        """
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.board_inst[row, col].cancel()
 
     def get_piece(self, position):
         """
@@ -64,3 +70,35 @@ class Board(object):
         """
         (row, col) = position
         return self.board_inst[row, col]
+
+    def move(self, last_position, next_position):
+        """
+        This method moves the selected chess piece from the last position to the next one
+        :param last_position: (Integer, Integer) The last position of the selected chess piece
+        :param next_position: (Integer, Integer) The next position of the selected chess piece
+        :return: None
+        """
+        if last_position == next_position:
+            return
+
+        (last_row, last_col) = last_position
+        (next_row, next_col) = next_position
+
+        self.board_inst[next_row, next_col] = self.board_inst[last_row, last_col]
+        self.board_inst[last_row, last_col] = Empty(last_row, last_col, None)
+
+        self.board_inst[next_row, next_col].move(next_row, next_col)
+
+    def is_move_valid(self, last_position, next_position):
+        """
+        This method validated the current move that is being made
+        :param last_position: (Integer, Integer) The last position of the selected chess piece
+        :param next_position: (Integer, Integer) The next position of the selected chess piece
+        :return: Boolean (True or False)
+        """
+        # TODO add logic for last_position and next_position
+        (last_row, last_col) = last_position
+        if self.board_inst[last_row, last_col].is_selected:
+            return True
+
+        return False

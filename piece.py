@@ -142,11 +142,10 @@ class Knight(Piece):
         list_abstract_positions = [{
             'x': 1,
             'y': 2
-        },
-            {
-                'x': 2,
-                'y': 1
-            }]
+        }, {
+            'x': 2,
+            'y': 1
+        }]
 
         def append_to_list_positions(x1, y1):
             list_positions.append({

@@ -172,7 +172,7 @@ def main():
 
     pygame.display.set_caption(common.TITLE + " (\"" + board.current_color.capitalize() + "\" to move)")
     pygame.display.set_icon(pygame.image.load(os.path.join("pics",
-                                                           "Icon.png")))
+                                                           "Icon2.png")))
     clock = pygame.time.Clock()
     pygame.font.init()
 

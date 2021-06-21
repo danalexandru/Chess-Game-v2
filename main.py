@@ -54,7 +54,6 @@ def redraw_game_state(screen, board, dict_images):
     :return: Boolean (True or False)
     """
     redraw_empty_board(screen, board)
-    redraw_highlighted_board_instances(screen, board)
     redraw_board_instance(screen, board, dict_images)
 
     pygame.display.update()
@@ -77,31 +76,6 @@ def redraw_empty_board(screen, board):
                                                         common.SQUARE_SIZE, common.SQUARE_SIZE))
 
 
-def redraw_highlighted_board_instances(screen, board):
-    """
-    This function highlights the selected chess piece, as well as it's valid moves
-
-    :param screen: (pygame.display) Pygame module to control the display window and screen
-    :param board: (Dict{8, 8}) The current state of the chess pieces on the board
-    :return: None
-    """
-    highlighted_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
-    highlighted_square.fill((246, 246, 130, 150))  # yellow
-
-    for row in range(board.rows):
-        for col in range(board.cols):
-            if board.get_piece((row, col)).is_selected:
-                screen.blit(highlighted_square,
-                            pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
-                                        common.SQUARE_SIZE, common.SQUARE_SIZE))
-
-                board.update_valid_moves()
-                for move in board.get_piece((row, col)).valid_moves:
-                    screen.blit(highlighted_square,
-                                pygame.Rect(move[1] * common.SQUARE_SIZE, move[0] * common.SQUARE_SIZE,
-                                            common.SQUARE_SIZE, common.SQUARE_SIZE))
-
-
 def redraw_board_instance(screen, board, dict_images):
     """
     This method draws the remaining chess pieces on the empty board
@@ -112,9 +86,23 @@ def redraw_board_instance(screen, board, dict_images):
     :return: None
     """
     from piece import Empty
+    highlighted_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
+    highlighted_square.fill((246, 246, 130, 150))  # yellow
+
     for row in range(board.rows):
         for col in range(board.cols):
             piece = board.get_piece((row, col))
+
+            if piece.is_selected: # highlight selected piece position
+                screen.blit(highlighted_square,
+                            pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
+                                        common.SQUARE_SIZE, common.SQUARE_SIZE))
+
+                board.update_valid_moves()
+                for move in board.get_piece((row, col)).valid_moves: # highlight valid moves of selected piece
+                    screen.blit(highlighted_square,
+                                pygame.Rect(move[1] * common.SQUARE_SIZE, move[0] * common.SQUARE_SIZE,
+                                            common.SQUARE_SIZE, common.SQUARE_SIZE))
 
             if not isinstance(piece, Empty):
                 screen.blit(dict_images[piece.color][piece.name],

@@ -2,6 +2,7 @@
 This file contains the common functions and constants that will be used across the project
 """
 import sys
+from termcolor import colored
 
 from enum import Enum
 
@@ -49,7 +50,7 @@ def error(message):
     :param message: (String) The message that we want to display
     :return:
     """
-    print(message, file=sys.stderr)
+    print(colored(message, "red"), file=sys.stderr)
     sys.exit()
 
 # endregion functions

@@ -85,25 +85,34 @@ def redraw_board_instance(screen, board, dict_images):
     :param dict_images: (Dict{"black": [], "white": []}) Dictionary containing the images of the chess pieces
     :return: None
     """
-    from piece import Empty
+    from piece import Empty, King
     highlighted_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
     highlighted_square.fill((246, 246, 130, 150))  # yellow
+
+    check_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
+    check_square.fill((219, 21, 7, 200))  # red
 
     for row in range(board.rows):
         for col in range(board.cols):
             piece = board.get_piece((row, col))
 
-            if piece.is_selected: # highlight selected piece position
+            if piece.is_selected:  # highlight selected piece position
                 screen.blit(highlighted_square,
                             pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
                                         common.SQUARE_SIZE, common.SQUARE_SIZE))
 
                 board.update_valid_moves()
-                for move in board.get_piece((row, col)).valid_moves: # highlight valid moves of selected piece
+                for move in board.get_piece((row, col)).valid_moves:  # highlight valid moves of selected piece
                     screen.blit(highlighted_square,
                                 pygame.Rect(move[1] * common.SQUARE_SIZE, move[0] * common.SQUARE_SIZE,
                                             common.SQUARE_SIZE, common.SQUARE_SIZE))
 
+            if isinstance(piece, King) and piece.is_in_check:
+                screen.blit(check_square,
+                            pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
+                                        common.SQUARE_SIZE, common.SQUARE_SIZE))
+
+            # if isinstance(piece, King) and board
             if not isinstance(piece, Empty):
                 screen.blit(dict_images[piece.color][piece.name],
                             pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
@@ -187,6 +196,7 @@ def main():
                     if board.is_move_valid(last_position, position):
                         board.move(last_position, position)
                         board.update_king_position(last_position, position)
+                        board.is_in_check()
                         board.update_current_color()
 
                     board.cancel()

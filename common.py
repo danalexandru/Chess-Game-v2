@@ -40,7 +40,7 @@ def debug(message):
     :return: None
     """
     if FLAG_DEBUG:
-        print(message)
+        print(colored(("DEBUG: %s" % message), "cyan"))
 
 
 def error(message):
@@ -50,7 +50,7 @@ def error(message):
     :param message: (String) The message that we want to display
     :return:
     """
-    print(colored(message, "red"), file=sys.stderr)
+    print(colored(("ERROR: %s" % message), "red"), file=sys.stderr)
     sys.exit()
 
 # endregion functions

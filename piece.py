@@ -263,6 +263,7 @@ class King(Piece):
     short_name = "K"
     strength = 90
     has_been_moved = False
+    is_in_check = False
 
     def update_valid_moves(self, board_inst):
         """

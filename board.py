@@ -123,8 +123,9 @@ class Board(object):
                 temp_board.move((current_piece.row, current_piece.col), (valid_row, valid_col))
                 temp_board.get_piece((valid_row, valid_col)).update_valid_moves(temp_board.board_inst)
 
-                dict_is_check = temp_board.is_in_check()
-                if dict_is_check["black"] or dict_is_check["white"]:
+                temp_board.is_in_check()
+                if temp_board.get_piece(temp_board.king_position["black"]).is_in_check or \
+                        temp_board.get_piece(temp_board.king_position["white"]).is_in_check:
                     current_piece.valid_moves.remove((valid_row, valid_col))
 
             del temp_board
@@ -254,18 +255,9 @@ class Board(object):
         """
         This method determines whether or not either King is in check
 
-        :return: (Dict) A dictionary containing whether or not a King is in check
-        {
-            "black": <Boolean>,
-            "white": <Boolean>
-        }
+        :return: None
         """
         self.update_valid_moves()
-
-        dict_result = {
-            "black": False,
-            "white": False
-        }
 
         for row in range(self.rows):
             for col in range(self.cols):
@@ -274,9 +266,13 @@ class Board(object):
 
                 piece = self.get_piece((row, col))
                 if self.king_position["black"] in piece.valid_moves and piece.color == "white":
-                    dict_result["black"] = True
+                    self.get_piece(self.king_position["black"]).is_in_check = True
+                    return
+                else:
+                    self.get_piece(self.king_position["black"]).is_in_check = False
 
                 if self.king_position["white"] in piece.valid_moves and piece.color == "black":
-                    dict_result["white"] = True
-
-        return dict_result
+                    self.get_piece(self.king_position["white"]).is_in_check = True
+                    return
+                else:
+                    self.get_piece(self.king_position["white"]).is_in_check = False

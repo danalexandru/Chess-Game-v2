@@ -53,14 +53,9 @@ def redraw_game_state(screen, board, dict_images):
     :param dict_images: (Dict{"black": {}, "white": {}}) Dictionary containing the images of the chess pieces
     :return: Boolean (True or False)
     """
-    if not redraw_empty_board(screen, board):
-        return False
-
-    if not redraw_highlighted_board_instances(screen, board):
-        return False
-
-    if not redraw_board_instance(screen, board, dict_images):
-        return False
+    redraw_empty_board(screen, board)
+    redraw_highlighted_board_instances(screen, board)
+    redraw_board_instance(screen, board, dict_images)
 
     pygame.display.update()
     return True
@@ -72,7 +67,7 @@ def redraw_empty_board(screen, board):
 
     :param screen: (pygame.display) Pygame module to control the display window and screen
     :param board: (Dict{8, 8}) The current state of the chess pieces on the board
-    :return: Boolean (True or False)
+    :return: None
     """
     colors = [pygame.Color(235, 235, 208), pygame.Color(119, 148, 85)]
     for row in range(board.rows):
@@ -81,8 +76,6 @@ def redraw_empty_board(screen, board):
             pygame.draw.rect(screen, color, pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
                                                         common.SQUARE_SIZE, common.SQUARE_SIZE))
 
-    return True
-
 
 def redraw_highlighted_board_instances(screen, board):
     """
@@ -90,7 +83,7 @@ def redraw_highlighted_board_instances(screen, board):
 
     :param screen: (pygame.display) Pygame module to control the display window and screen
     :param board: (Dict{8, 8}) The current state of the chess pieces on the board
-    :return: Boolean (True or False)
+    :return: None
     """
     highlighted_square = pygame.Surface((common.SQUARE_SIZE, common.SQUARE_SIZE), pygame.SRCALPHA, 32)
     highlighted_square.fill((246, 246, 130, 150))  # yellow
@@ -108,8 +101,6 @@ def redraw_highlighted_board_instances(screen, board):
                                 pygame.Rect(move[1] * common.SQUARE_SIZE, move[0] * common.SQUARE_SIZE,
                                             common.SQUARE_SIZE, common.SQUARE_SIZE))
 
-    return True
-
 
 def redraw_board_instance(screen, board, dict_images):
     """
@@ -118,7 +109,7 @@ def redraw_board_instance(screen, board, dict_images):
     :param screen: (pygame.display) Pygame module to control the display window and screen
     :param board: (Dict{8, 8}) The current state of the chess pieces on the board
     :param dict_images: (Dict{"black": [], "white": []}) Dictionary containing the images of the chess pieces
-    :return: Boolean (True or False)
+    :return: None
     """
     from piece import Empty
     for row in range(board.rows):
@@ -129,7 +120,6 @@ def redraw_board_instance(screen, board, dict_images):
                 screen.blit(dict_images[piece.color][piece.name],
                             pygame.Rect(col * common.SQUARE_SIZE, row * common.SQUARE_SIZE,
                                         common.SQUARE_SIZE, common.SQUARE_SIZE))
-    return True
 
 
 # endregion redraw_game_state
@@ -200,12 +190,15 @@ def main():
                 position = click_on_chessboard(mouse_current_position)
 
                 if position is not False:
+                    board.update_valid_moves()
+                    # board.filter_valid_moves()
                     board.select(position)
                     common.debug("Position: (%d, %d)" % (position[0], position[1]))
 
                 if position is not False and last_position is not False:
                     if board.is_move_valid(last_position, position):
                         board.move(last_position, position)
+                        board.update_king_position(last_position, position)
                         board.update_current_color()
 
                     board.cancel()

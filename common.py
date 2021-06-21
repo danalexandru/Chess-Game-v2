@@ -1,6 +1,8 @@
 """
 This file contains the common functions and constants that will be used across the project
 """
+import sys
+
 from enum import Enum
 
 # region constants
@@ -28,14 +30,26 @@ GAME_MODE = GameMode.MULTI_PLAYER
 # endregion constants
 
 
-# region debug
+# region functions
 def debug(message):
     """
     This method prints a message only if the FLAG_DEBUG flag is set to true
+
     :param message: (String) The message that we want to display
     :return: None
     """
     if FLAG_DEBUG:
         print(message)
 
-# endregion debug
+
+def error(message):
+    """
+    This method prints an error message and exits the application
+
+    :param message: (String) The message that we want to display
+    :return:
+    """
+    print(message, file=sys.stderr)
+    sys.exit()
+
+# endregion functions

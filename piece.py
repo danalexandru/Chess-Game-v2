@@ -322,9 +322,6 @@ class King(Piece):
         :param next_col: The column position of the next move
         :return: Boolean (True of False)
         """
-        rows = 8
-        cols = 8
-
         from board import Board
         board_handler = Board()
         board_handler.board_inst = copy.deepcopy(board_inst)
@@ -333,8 +330,8 @@ class King(Piece):
         board_handler.board_inst[next_row, next_col] = Pawn(next_row, next_col, self.color)
         board_handler.update_valid_moves()
 
-        for i in range(rows):
-            for j in range(cols):
+        for i in range(board_handler.rows):
+            for j in range(board_handler.cols):
                 if isinstance(board_handler.board_inst[i, j], Empty) or \
                         board_handler.board_inst[i, j].color == self.color or \
                         len(board_handler.board_inst[i, j].valid_moves) == 0:

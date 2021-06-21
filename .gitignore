@@ -1,4 +1,7 @@
 /.idea/*
 /__pycache__/*
 *.ini
+id_rsa
+id_rsa.pub
+/venv/*
 .DS_STORE

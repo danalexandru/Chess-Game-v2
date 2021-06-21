@@ -1,7 +1,7 @@
 """
 The part of the project that deals with the login between chess pieces
 """
-import sys
+import copy
 
 import common
 from piece import Rook, Knight, Bishop, Queen, King, Pawn, Empty
@@ -13,6 +13,11 @@ class Board(object):
         self.cols = common.DIMENSION
 
         self.current_color = "white"
+
+        self.king_position = {
+            "black": (0, 4),
+            "white": (7, 4)
+        }
 
         self.board_inst = {}
         for row in range(self.rows):
@@ -76,6 +81,7 @@ class Board(object):
     def move(self, last_position, next_position):
         """
         This method moves the selected chess piece from the last position to the next one
+
         :param last_position: (Integer, Integer) The last position of the selected chess piece
         :param next_position: (Integer, Integer) The next position of the selected chess piece
         :return: None
@@ -102,9 +108,42 @@ class Board(object):
             for col in range(self.cols):
                 self.board_inst[row, col].update_valid_moves(self.board_inst)
 
+    def filter_valid_moves(self):
+        """
+        This method filters the valid moves list of all chess pieces across the board (in case of check)
+
+        :return: None
+        """
+        def remove_invalid_moves(board_inst, current_piece):
+            temp_board = Board()
+            temp_board.board_inst = copy.deepcopy(board_inst)
+            temp_board.current_color = current_piece.color
+
+            for (valid_row, valid_col) in current_piece.valid_moves:
+                temp_board.move((current_piece.row, current_piece.col), (valid_row, valid_col))
+                temp_board.get_piece((valid_row, valid_col)).update_valid_moves(temp_board.board_inst)
+
+                dict_is_check = temp_board.is_in_check()
+                if dict_is_check["black"] or dict_is_check["white"]:
+                    current_piece.valid_moves.remove((valid_row, valid_col))
+
+            del temp_board
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                if isinstance(self.board_inst[row, col], Empty):
+                    continue
+
+                if (row, col) in [self.king_position["black"], self.king_position["white"]]:
+                    continue
+
+                piece = self.get_piece((row, col))
+                remove_invalid_moves(self.board_inst, piece)
+
     def is_move_valid(self, last_position, next_position):
         """
         This method validated the current move that is being made
+
         :param last_position: (Integer, Integer) The last position of the selected chess piece
         :param next_position: (Integer, Integer) The next position of the selected chess piece
         :return: Boolean (True or False)
@@ -122,6 +161,7 @@ class Board(object):
     def update_current_color(self):
         """
         This method update the color of the current player
+
         :return: None
         """
         if self.current_color == "black":
@@ -129,8 +169,7 @@ class Board(object):
         elif self.current_color == "white":
             self.current_color = "black"
         else:
-            common.debug("Unrecognized color: %s. Exit game." % str(self.current_color))
-            sys.exit()
+            common.error("Unrecognized color: \"%s\". Exit game." % str(self.current_color))
 
     def special_moves_cases(self, last_position, next_position):
         """
@@ -195,3 +234,49 @@ class Board(object):
         if next_row == 7 and isinstance(self.board_inst[next_row, next_col], Pawn) and \
                 self.board_inst[next_row, next_col].color == 'black':
             self.board_inst[next_row, next_col] = Queen(next_row, next_col, 'black')
+
+    def update_king_position(self, last_position, next_position):
+        """
+        This method updates the last position of the King (if the King was moved)
+
+        :param last_position: (Integer, Integer) The last position of the King
+        :param next_position: (Integer, Integer) The next position of the King
+        :return: None
+        """
+        if last_position != self.king_position["black"] and next_position != self.king_position["white"]:
+            return
+        elif last_position == self.king_position["black"]:
+            self.king_position["black"] = next_position
+        else:
+            self.king_position["white"] = next_position
+
+    def is_in_check(self):
+        """
+        This method determines whether or not either King is in check
+
+        :return: (Dict) A dictionary containing whether or not a King is in check
+        {
+            "black": <Boolean>,
+            "white": <Boolean>
+        }
+        """
+        self.update_valid_moves()
+
+        dict_result = {
+            "black": False,
+            "white": False
+        }
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                if (row, col) in [self.king_position["black"], self.king_position["white"]]:
+                    continue
+
+                piece = self.get_piece((row, col))
+                if self.king_position["black"] in piece.valid_moves and piece.color == "white":
+                    dict_result["black"] = True
+
+                if self.king_position["white"] in piece.valid_moves and piece.color == "black":
+                    dict_result["white"] = True
+
+        return dict_result
